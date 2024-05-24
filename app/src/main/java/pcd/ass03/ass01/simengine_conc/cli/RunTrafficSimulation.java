@@ -32,22 +32,9 @@ public class RunTrafficSimulation {
 		view.display();
 
 		simulation.addSimulationListener(stat);
-		simulation.addSimulationListener(new SimulationListener() {
-			public void notifyInit(int t, List<AbstractAgent> agents, AbstractEnvironment env) {
-				System.err.println("Init: " + t);
-				view.notifyInit(t, agents, env);
-			}
-
-			public void notifyStepDone(int t, List<AbstractAgent> agents, AbstractEnvironment env) {
-				System.err.println("Done: " + t);
-				view.notifyStepDone(t, agents, env);
-			}
-
-		});
+		simulation.addSimulationListener(view);
 
 		Flag stopFlag = new Flag();
 		simulation.run(steps, stopFlag, true);
-
-
 	}
 }
