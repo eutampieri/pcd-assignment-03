@@ -2,8 +2,6 @@ package pcd.ass03.ass01.simengine_conc.gui;
 
 import java.util.List;
 
-import pcd.ass02.ass01.simengine_conc.*;
-import pcd.ass02.ass01.simtraffic_conc.*;
 import pcd.ass03.ass01.simengine_conc.AbstractAgent;
 import pcd.ass03.ass01.simengine_conc.AbstractEnvironment;
 import pcd.ass03.ass01.simengine_conc.SimulationListener;
