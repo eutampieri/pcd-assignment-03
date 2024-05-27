@@ -5,7 +5,7 @@ import java.awt.event.*;
 import com.google.gson.JsonArray;
 
 public class SudokuGUI extends JFrame {
-    private SudokuPlayer player;
+    private Game sudoku;
     private JPanel mainPanel;
     private int numTopic=0;
 
@@ -22,9 +22,6 @@ public class SudokuGUI extends JFrame {
         newGridButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
-                    String topic = String.valueOf(numTopic);
-                    player.newGrid(topic);
-                    numTopic++;
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
@@ -32,14 +29,10 @@ public class SudokuGUI extends JFrame {
         });
         add(newGridButton, BorderLayout.SOUTH);
 
-        try {
-            // SAREBBERO PIU DI 1
-            player = new SudokuPlayer(this);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
         setVisible(true);
+
+        // TODO Use factory to create a game
+        // TODO subscribe on sudoku updates stream, possibly in a new thread
     }
 
     public void updateGrid(String topic, JsonArray board) {
@@ -57,7 +50,7 @@ public class SudokuGUI extends JFrame {
                         JButton btn = (JButton) e.getSource();
                         byte value = Byte.parseByte(JOptionPane.showInputDialog("Enter value:"));
                         try {
-                            player.setGrid(r, c, value, topic);
+                            //this.sudoku.setCell(r, c, value, topic);
                         } catch (Exception ex) {
                             ex.printStackTrace();
                         }
