@@ -1,13 +1,15 @@
 package pcd.ass03.sudokuMOM;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+
 import com.google.gson.JsonArray;
 
 public class SudokuGUI extends JFrame {
     private Game sudoku;
     private JPanel mainPanel;
-    private int numTopic=0;
+    private int numTopic = 0;
 
     public SudokuGUI() {
         super("Sudoku Game");
