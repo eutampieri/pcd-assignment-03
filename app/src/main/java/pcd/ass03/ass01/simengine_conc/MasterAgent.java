@@ -6,7 +6,7 @@ import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.javadsl.Receive;
-import pcd.ass02.ass01.simtraffic_conc_examples.*;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +59,6 @@ public class MasterAgent extends AbstractBehavior<Message> {
 
     private Behavior<Message> onCommand(Message.Command command) {
         startSimulation(command.numSteps);
-        //return this;
         return Behaviors.same();
     }
 
@@ -68,7 +67,7 @@ public class MasterAgent extends AbstractBehavior<Message> {
         if (pendingResponses == 0) {
             stepSimulation();
         }
-        return this;
+        return Behaviors.same();
     }
 
     private void startSimulation(int numSteps) {

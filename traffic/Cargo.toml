@@ -1,0 +1,9 @@
+[package]
+name = "traffic"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+actix = "0.13.3"
+num-traits = "0.2.19"
+rayon = "1.10.0"

@@ -28,6 +28,9 @@ dependencies {
     implementation("com.typesafe.akka:akka-actor-typed_3:2.8.5")
     implementation("com.typesafe.akka:akka-actor_3:2.8.5")
     implementation("ch.qos.logback:logback-classic:1.2.13")
+    implementation("com.rabbitmq:amqp-client:5.21.0")
+    implementation("de.sfuhrm:sudoku:5.0.1")
+    implementation("com.google.code.gson:gson:2.8.8")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.

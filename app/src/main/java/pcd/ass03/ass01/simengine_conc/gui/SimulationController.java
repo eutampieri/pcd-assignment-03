@@ -1,6 +1,5 @@
 package pcd.ass03.ass01.simengine_conc.gui;
 
-import pcd.ass02.ass01.simengine_conc.*;
 import pcd.ass03.ass01.simengine_conc.AbstractSimulation;
 import pcd.ass03.ass01.simengine_conc.Flag;
 

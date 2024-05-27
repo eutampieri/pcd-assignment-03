@@ -1,7 +1,6 @@
 package pcd.ass03.ass01.simengine_conc.cli;
 
 import pcd.ass03.ass01.simengine_conc.Flag;
-import pcd.ass02.ass01.simtraffic_conc_examples.*;
 import pcd.ass03.ass01.simtraffic_conc_examples.TrafficSimulationSingleRoadMassiveNumberOfCars;
 
 public class RunTrafficSimulationMassiveTest {

@@ -1,7 +1,5 @@
 package pcd.ass03.ass01.simtraffic_conc_examples;
 
-import pcd.ass02.ass01.simengine_conc.*;
-import pcd.ass02.ass01.simtraffic_conc.*;
 import pcd.ass03.ass01.simengine_conc.AbstractSimulation;
 import pcd.ass03.ass01.simtraffic_conc.*;
 
