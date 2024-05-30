@@ -39,11 +39,11 @@ public class SudokuGUI extends JFrame {
         setVisible(true);
 
         // TODO Use factory to create a game
-        SwingUtilities.invokeLater(new Runnable() {
+        new Thread(new Runnable() {
             public void run() {
-                sudoku.getUpdates().filter(Optional::isPresent).peek(x -> System.out.println(x.get().serialize())).map(Optional::get).forEach(e -> updateGrid(e));
+                sudoku.getUpdates().filter(Optional::isPresent).map(Optional::get).forEach(e -> updateGrid(e));
             }
-        });
+        }).start();
         this.renderGrid();
     }
 
@@ -82,9 +82,11 @@ public class SudokuGUI extends JFrame {
     public void updateGrid(GameUpdate update) {
         int r = update.getX();
         int c = update.getY();
-        this.gridButtons[r][c] = new JButton(Integer.toString(update.getValue()));
-        this.revalidate();
-        this.repaint();
+        JButton button = this.gridButtons[r][c];
+        button.setEnabled(update.getType() != ValueType.GIVEN);
+        button.setText(Integer.toString(update.getValue()));
+        button.revalidate();
+        button.repaint();
     }
 
     public static void main(String[] args) {
