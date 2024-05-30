@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public final class Sudoku implements Game {
@@ -24,8 +25,9 @@ public final class Sudoku implements Game {
         this.riddle = riddle;
         this.channel = channel;
         this.id = id;
-        this.subscribeToUpdates();
-        this.subscribeToJoins();
+        System.err.println(riddle.toString());
+        //this.subscribeToUpdates();
+        //this.subscribeToJoins();
     }
 
     private void subscribeToUpdates() throws IOException {
@@ -118,7 +120,12 @@ public final class Sudoku implements Game {
     public Stream<Optional<GameUpdate>> getUpdates() {
         assert (!this.streamGenerated);
         this.streamGenerated = true;
-        return Stream.concat(null, Stream.generate(() -> {
+        return Stream.concat(
+                IntStream.range(0,81)
+                        .mapToObj(x -> new GameUpdate(x / 9, x % 9, this.riddle.get(x / 9, x % 9), ValueType.GIVEN))
+                        .filter(x -> x.getValue() != 0)
+                        .map(Optional::of)
+                , Stream.generate(() -> {
             try {
                 return Optional.of(this.updates.take());
             } catch (InterruptedException ie) {

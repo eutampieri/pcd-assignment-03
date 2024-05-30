@@ -13,6 +13,7 @@ public class SudokuGUI extends JFrame {
     private final Game sudoku;
     private final JPanel mainPanel;
     private int numTopic = 0;
+    private final JButton[][] gridButtons = new JButton[9][9];
 
     public SudokuGUI(Game sudoku) {
         super("Sudoku Game");
@@ -24,7 +25,7 @@ public class SudokuGUI extends JFrame {
         add(new JScrollPane(mainPanel), BorderLayout.CENTER);
         this.sudoku = sudoku;
 
-        JButton newGridButton = new JButton("New Grid");
+        /*JButton newGridButton = new JButton("New Grid");
         newGridButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
@@ -33,16 +34,17 @@ public class SudokuGUI extends JFrame {
                 }
             }
         });
-        add(newGridButton, BorderLayout.SOUTH);
+        add(newGridButton, BorderLayout.SOUTH);*/
 
         setVisible(true);
 
         // TODO Use factory to create a game
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                sudoku.getUpdates().filter(Optional::isPresent).map(Optional::get).forEach(e -> updateGrid(e));
+                sudoku.getUpdates().filter(Optional::isPresent).peek(x -> System.out.println(x.get().serialize())).map(Optional::get).forEach(e -> updateGrid(e));
             }
         });
+        this.renderGrid();
     }
 
     /**
@@ -50,7 +52,6 @@ public class SudokuGUI extends JFrame {
      */
     public void renderGrid() {
         JPanel gridPanel = new JPanel(new GridLayout(9, 9));
-        JButton[][] gridButtons = new JButton[9][9];
 
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
@@ -79,7 +80,11 @@ public class SudokuGUI extends JFrame {
     }
 
     public void updateGrid(GameUpdate update) {
-
+        int r = update.getX();
+        int c = update.getY();
+        this.gridButtons[r][c] = new JButton(Integer.toString(update.getValue()));
+        this.revalidate();
+        this.repaint();
     }
 
     public static void main(String[] args) {
