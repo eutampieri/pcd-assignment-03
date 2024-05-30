@@ -11,7 +11,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public final class Sudoku implements Game {
-    private static final String EXCHANGE_NAME = "sudoku_exchange";
+    static final String EXCHANGE_NAME = "sudoku_exchange";
 
     private final Riddle riddle;
     private final Channel channel;
@@ -48,7 +48,7 @@ public final class Sudoku implements Game {
         channel.queueBind(queueName, EXCHANGE_NAME, this.id + "/joins");
         this.channel.basicConsume(queueName, (consumerTag, x) -> {
             int randomValue = Integer.parseInt(new String(x.getBody(), "UTF-8"));
-            if (randomValue % this.numberOfNodes == this.nodeId) {
+            if (true || randomValue % this.numberOfNodes == this.nodeId) {
                 // I am responsible for answering his request
                 this.sendStatus();
                 this.channel.basicPublish(
@@ -63,9 +63,11 @@ public final class Sudoku implements Game {
         });
     }
 
-    private void sendStatus() {
+    private void sendStatus() throws IOException {
         for(int i = 0; i < 9; i++) {
             for(int j = 0; j < 9; j++) {
+                ValueType status = this.riddle.getWritable(i, j) ? ValueType.USER : ValueType.GIVEN;
+                this.sendRequest(new GameUpdate(i, j, this.riddle.get(i, j), status).serialize());
                 // TODO get the cell value and if it's fillable. If some number is present, send it to the channel
             }
         }

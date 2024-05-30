@@ -8,6 +8,8 @@ import de.sfuhrm.sudoku.*;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
+import static pcd.ass03.sudokuMOM.Sudoku.EXCHANGE_NAME;
+
 public final class GameFactory {
     public static Game joinGame(String gameId) throws IOException, TimeoutException {
         Riddle riddle = new GameMatrixFactory().newRiddle(GameSchemas.SCHEMA_9X9);
@@ -18,6 +20,7 @@ public final class GameFactory {
         Channel channel = connection.createChannel();
 
         // TODO Send a random number to gameId + "/join", wait for a response on gameId + "/" + randomFromBefore and set the node id to the response
+        channel.basicPublish(EXCHANGE_NAME, gameId+"/clicks", null, "".getBytes("UTF-8"));
 
         return new Sudoku(riddle, channel, gameId);
     }
