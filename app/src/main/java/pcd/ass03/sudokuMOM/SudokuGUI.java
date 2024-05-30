@@ -60,11 +60,12 @@ public class SudokuGUI extends JFrame {
                 int finalJ = j;
                 gridButtons[i][j].addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                        byte value = Byte.parseByte(JOptionPane.showInputDialog("Enter value:"));
+                        sudoku.notifyClick(finalI, finalJ);
                         try {
+                            byte value = Byte.parseByte(JOptionPane.showInputDialog("Enter value:"));
                             sudoku.setCell(finalI, finalJ, value, ValueType.USER);
                         } catch (Exception ex) {
-                            ex.printStackTrace();
+                            sudoku.setCell(finalI, finalJ, 0, ValueType.USER);
                         }
                     }
                 });
@@ -84,7 +85,7 @@ public class SudokuGUI extends JFrame {
         int c = update.getY();
         JButton button = this.gridButtons[r][c];
         button.setEnabled(update.getType() != ValueType.GIVEN);
-        button.setText(Integer.toString(update.getValue()));
+        button.setText(update.getValue() == 0 ? "" : Integer.toString(update.getValue()));
         button.revalidate();
         button.repaint();
     }

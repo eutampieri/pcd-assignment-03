@@ -27,7 +27,7 @@ public final class GameFactory {
         Riddle riddle = Creator.createRiddle(matrix);
 
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("localhost");
+        factory.setHost("192.168.1.9");
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
 

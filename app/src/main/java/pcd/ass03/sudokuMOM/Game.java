@@ -6,8 +6,10 @@ import java.util.stream.Stream;
 public interface Game {
     int getCell(int x, int y);
     boolean handleGameUpdate(GameUpdate update);
-    boolean setCell(int x, int y, int value, ValueType type);
+    void setCell(int x, int y, int value, ValueType type);
+    boolean canSetCell(int x, int y, int value);
     boolean checkForVictory();
     String getId();
     Stream<Optional<GameUpdate>> getUpdates();
+    void notifyClick(int x, int y);
 }

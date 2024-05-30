@@ -24,17 +24,20 @@ public final class Sudoku implements Game {
     public Sudoku(Riddle riddle, Channel channel, String id) throws IOException {
         this.riddle = riddle;
         this.channel = channel;
+        channel.exchangeDeclare(EXCHANGE_NAME, "topic");
         this.id = id;
         System.err.println(riddle.toString());
-        //this.subscribeToUpdates();
-        //this.subscribeToJoins();
+        this.subscribeToUpdates();
+        this.subscribeToJoins();
     }
 
     private void subscribeToUpdates() throws IOException {
         String queueName = channel.queueDeclare().getQueue();
         channel.queueBind(queueName, EXCHANGE_NAME, this.id);
         this.channel.basicConsume(queueName, (consumerTag, x) -> {
-            GameUpdate u = new GameUpdate(new String(x.getBody(), "UTF-8"));
+            String message = new String(x.getBody(), "UTF-8");
+            System.out.println(" [x] Received '" + message + "'");
+            GameUpdate u = new GameUpdate(message);
             this.handleGameUpdate(u);
         }, x -> {
         });
@@ -91,19 +94,26 @@ public final class Sudoku implements Game {
     }
 
     @Override
-    public boolean setCell(int x, int y, int value, ValueType type) {
+    public void setCell(int x, int y, int value, ValueType type) {
+        if(!this.canSetCell(x, y, value)) {
+            return;
+        }
         GameUpdate update = new GameUpdate(x, y, value, type);
         // TODO don't call handleGameUpdate. Rely on message queue
-        if (this.handleGameUpdate(update)) {
+        //if (this.handleGameUpdate(update)) {
             try {
                 this.sendRequest(update.serialize());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            return true;
-        } else {
+        /*} else {
             return false;
-        }
+        }*/
+    }
+
+    @Override
+    public boolean canSetCell(int x, int y, int value) {
+        return this.riddle.canSet(x, y, (byte) value);
     }
 
     @Override
@@ -132,6 +142,15 @@ public final class Sudoku implements Game {
                 return Optional.empty();
             }
         }));
+    }
+
+    @Override
+    public void notifyClick(int x, int y) {
+        try {
+            channel.basicPublish(EXCHANGE_NAME, this.id+"/clicks", null, (x + " " + y).getBytes("UTF-8"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void sendRequest(String request) throws IOException {
