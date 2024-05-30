@@ -50,7 +50,7 @@ public final class Sudoku implements Game {
                         EXCHANGE_NAME,
                         this.id + "/" + randomValue,
                         null,
-                        Integer.toString(randomValue).getBytes("UTF-8")
+                        Integer.toString(this.numberOfNodes).getBytes("UTF-8")
                 );
             }
             this.numberOfNodes += 1;
@@ -74,9 +74,12 @@ public final class Sudoku implements Game {
     @Override
     public boolean handleGameUpdate(GameUpdate update) {
         if (this.riddle.canSet(update.getX(), update.getY(), (byte) update.getValue())) {
-            this.riddle.set(update.getX(), update.getY(), (byte) update.getValue());
             if (update.getType() == ValueType.GIVEN) {
+                this.riddle.set(update.getX(), update.getY(), (byte) update.getValue());
                 this.riddle.setWritable(update.getX(), update.getY(), false);
+            } else {
+                this.riddle.setWritable(update.getX(), update.getY(), true);
+                this.riddle.set(update.getX(), update.getY(), (byte) update.getValue());
             }
             this.updates.add(update);
             return true;
@@ -88,9 +91,10 @@ public final class Sudoku implements Game {
     @Override
     public boolean setCell(int x, int y, int value, ValueType type) {
         GameUpdate update = new GameUpdate(x, y, value, type);
+        // TODO don't call handleGameUpdate. Rely on message queue
         if (this.handleGameUpdate(update)) {
             try {
-                this.sendRequest(update.toString());
+                this.sendRequest(update.serialize());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -111,16 +115,16 @@ public final class Sudoku implements Game {
     }
 
     @Override
-    public Stream<Optional<GameUpdate>> getUpdats() {
+    public Stream<Optional<GameUpdate>> getUpdates() {
         assert (!this.streamGenerated);
         this.streamGenerated = true;
-        return Stream.generate(() -> {
+        return Stream.concat(null, Stream.generate(() -> {
             try {
                 return Optional.of(this.updates.take());
             } catch (InterruptedException ie) {
                 return Optional.empty();
             }
-        });
+        }));
     }
 
     private void sendRequest(String request) throws IOException {

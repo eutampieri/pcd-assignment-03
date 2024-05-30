@@ -9,5 +9,5 @@ public interface Game {
     boolean setCell(int x, int y, int value, ValueType type);
     boolean checkForVictory();
     String getId();
-    Stream<Optional<GameUpdate>> getUpdats();
+    Stream<Optional<GameUpdate>> getUpdates();
 }

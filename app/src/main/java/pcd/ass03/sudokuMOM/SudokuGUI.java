@@ -3,15 +3,18 @@ package pcd.ass03.sudokuMOM;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
+import java.util.Optional;
+import java.util.concurrent.TimeoutException;
 
 import com.google.gson.JsonArray;
 
 public class SudokuGUI extends JFrame {
-    private Game sudoku;
-    private JPanel mainPanel;
+    private final Game sudoku;
+    private final JPanel mainPanel;
     private int numTopic = 0;
 
-    public SudokuGUI() {
+    public SudokuGUI(Game sudoku) {
         super("Sudoku Game");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(500, 500);
@@ -19,6 +22,7 @@ public class SudokuGUI extends JFrame {
         mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         add(new JScrollPane(mainPanel), BorderLayout.CENTER);
+        this.sudoku = sudoku;
 
         JButton newGridButton = new JButton("New Grid");
         newGridButton.addActionListener(new ActionListener() {
@@ -34,25 +38,30 @@ public class SudokuGUI extends JFrame {
         setVisible(true);
 
         // TODO Use factory to create a game
-        // TODO subscribe on sudoku updates stream, possibly in a new thread
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                sudoku.getUpdates().filter(Optional::isPresent).map(Optional::get).forEach(e -> updateGrid(e));
+            }
+        });
     }
 
-    public void updateGrid(String topic, JsonArray board) {
+    /**
+     * This function renders an empty grid
+     */
+    public void renderGrid() {
         JPanel gridPanel = new JPanel(new GridLayout(9, 9));
         JButton[][] gridButtons = new JButton[9][9];
 
         for (int i = 0; i < 9; i++) {
-            JsonArray row = board.get(i).getAsJsonArray();
             for (int j = 0; j < 9; j++) {
-                final int r = i;
-                final int c = j;
-                gridButtons[i][j] = new JButton(String.valueOf(row.get(j).getAsByte()));
+                gridButtons[i][j] = new JButton("");
+                int finalI = i;
+                int finalJ = j;
                 gridButtons[i][j].addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                        JButton btn = (JButton) e.getSource();
                         byte value = Byte.parseByte(JOptionPane.showInputDialog("Enter value:"));
                         try {
-                            //this.sudoku.setCell(r, c, value, topic);
+                            sudoku.setCell(finalI, finalJ, value, ValueType.USER);
                         } catch (Exception ex) {
                             ex.printStackTrace();
                         }
@@ -63,16 +72,26 @@ public class SudokuGUI extends JFrame {
         }
 
         JPanel panelWrapper = new JPanel(new BorderLayout());
-        panelWrapper.setBorder(BorderFactory.createTitledBorder("Grid " + topic));
+        panelWrapper.setBorder(BorderFactory.createTitledBorder("Grid " + this.sudoku.getId()));
         panelWrapper.add(gridPanel, BorderLayout.CENTER);
         mainPanel.add(panelWrapper);
         mainPanel.revalidate();
     }
 
+    public void updateGrid(GameUpdate update) {
+
+    }
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                new SudokuGUI();
+                try {
+                    new SudokuGUI(GameFactory.startGame());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                } catch (TimeoutException e) {
+                    throw new RuntimeException(e);
+                }
             }
         });
     }

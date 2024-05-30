@@ -17,7 +17,7 @@ public final class GameFactory {
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
 
-        // TODO Send a random numner to gameId + "/join", wait for a response on gameId + "/" + randomFromBefore and set the node id to the response
+        // TODO Send a random number to gameId + "/join", wait for a response on gameId + "/" + randomFromBefore and set the node id to the response
 
         return new Sudoku(riddle, channel, gameId);
     }
