@@ -6,7 +6,9 @@ import com.rabbitmq.client.ConnectionFactory;
 import de.sfuhrm.sudoku.*;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static pcd.ass03.sudokuMOM.Sudoku.EXCHANGE_NAME;
 
@@ -19,10 +21,23 @@ public final class GameFactory {
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
 
-        // TODO Send a random number to gameId + "/join", wait for a response on gameId + "/" + randomFromBefore and set the node id to the response
-        channel.basicPublish(EXCHANGE_NAME, gameId+"/clicks", null, "".getBytes("UTF-8"));
+        Sudoku sudoku = new Sudoku(riddle, channel, gameId);
 
-        return new Sudoku(riddle, channel, gameId);
+        channel.basicPublish(EXCHANGE_NAME, ChannelNames.getAnnounceRoutingKey(gameId), null, "".getBytes("UTF-8"));
+        final String queueName = channel.queueDeclare().getQueue();
+        final String routingKey = ChannelNames.getAnnounceRoutingKey(gameId);
+        AtomicBoolean requestSent = new AtomicBoolean(false);
+        channel.queueBind(queueName, EXCHANGE_NAME, routingKey);
+        channel.basicConsume(queueName, (consumerTag, x) -> {
+            String body = new String(x.getBody(), StandardCharsets.UTF_8);
+            if (!requestSent.get() && !body.isEmpty() && !body.equals(Integer.toString(sudoku.getNodeId()))) {
+                channel.basicPublish(EXCHANGE_NAME, ChannelNames.getJoinsRoutingKey(gameId), null, body.getBytes());
+                requestSent.set(true);
+            }
+        }, x -> {
+        });
+
+        return sudoku;
     }
 
     public static Game startGame() throws IOException, TimeoutException {
@@ -30,7 +45,7 @@ public final class GameFactory {
         Riddle riddle = Creator.createRiddle(matrix);
 
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("192.168.1.9");
+        factory.setHost("localhost");
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
 

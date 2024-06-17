@@ -4,7 +4,9 @@ import com.rabbitmq.client.Channel;
 import de.sfuhrm.sudoku.Riddle;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.stream.IntStream;
@@ -18,8 +20,7 @@ public final class Sudoku implements Game {
     private final String id;
     private final BlockingQueue<GameUpdate> updates = new ArrayBlockingQueue<>(10);
     private boolean streamGenerated = false;
-    private int numberOfNodes = 1;
-    private int nodeId = 0;
+    private final int nodeId;
 
     public Sudoku(Riddle riddle, Channel channel, String id) throws IOException {
         this.riddle = riddle;
@@ -29,13 +30,15 @@ public final class Sudoku implements Game {
         System.err.println(riddle.toString());
         this.subscribeToUpdates();
         this.subscribeToJoins();
+        this.subscribeToAnnounce();
+        this.nodeId = new Random().nextInt();
     }
 
     private void subscribeToUpdates() throws IOException {
         String queueName = channel.queueDeclare().getQueue();
-        channel.queueBind(queueName, EXCHANGE_NAME, this.id);
+        channel.queueBind(queueName, EXCHANGE_NAME, ChannelNames.getBaseRoutingKey(this.id));
         this.channel.basicConsume(queueName, (consumerTag, x) -> {
-            String message = new String(x.getBody(), "UTF-8");
+            String message = new String(x.getBody(), StandardCharsets.UTF_8);
             System.out.println(" [x] Received '" + message + "'");
             GameUpdate u = new GameUpdate(message);
             this.handleGameUpdate(u);
@@ -45,30 +48,35 @@ public final class Sudoku implements Game {
 
     private void subscribeToJoins() throws IOException {
         String queueName = channel.queueDeclare().getQueue();
-        channel.queueBind(queueName, EXCHANGE_NAME, this.id + "/joins");
+        channel.queueBind(queueName, EXCHANGE_NAME, ChannelNames.getJoinsRoutingKey(this.id));
         this.channel.basicConsume(queueName, (consumerTag, x) -> {
-            int randomValue = Integer.parseInt(new String(x.getBody(), "UTF-8"));
-            if (true || randomValue % this.numberOfNodes == this.nodeId) {
+            int requestedNode = Integer.parseInt(new String(x.getBody(), StandardCharsets.UTF_8));
+            if (requestedNode == this.nodeId) {
                 // I am responsible for answering his request
                 this.sendStatus();
-                this.channel.basicPublish(
-                        EXCHANGE_NAME,
-                        this.id + "/" + randomValue,
-                        null,
-                        Integer.toString(this.numberOfNodes).getBytes("UTF-8")
-                );
             }
-            this.numberOfNodes += 1;
+        }, x -> {
+        });
+    }
+
+    private void subscribeToAnnounce() throws IOException {
+        final String queueName = channel.queueDeclare().getQueue();
+        final String routingKey = ChannelNames.getAnnounceRoutingKey(this.id);
+        channel.queueBind(queueName, EXCHANGE_NAME, routingKey);
+        this.channel.basicConsume(queueName, (consumerTag, x) -> {
+            String body = new String(x.getBody(), StandardCharsets.UTF_8);
+            if (body.isEmpty()) {
+                channel.basicPublish(EXCHANGE_NAME, routingKey, null, Integer.toString(this.nodeId).getBytes());
+            }
         }, x -> {
         });
     }
 
     private void sendStatus() throws IOException {
-        for(int i = 0; i < 9; i++) {
-            for(int j = 0; j < 9; j++) {
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
                 ValueType status = this.riddle.getWritable(i, j) ? ValueType.USER : ValueType.GIVEN;
                 this.sendRequest(new GameUpdate(i, j, this.riddle.get(i, j), status).serialize());
-                // TODO get the cell value and if it's fillable. If some number is present, send it to the channel
             }
         }
     }
@@ -97,20 +105,15 @@ public final class Sudoku implements Game {
 
     @Override
     public void setCell(int x, int y, int value, ValueType type) {
-        if(!this.canSetCell(x, y, value)) {
+        if (!this.canSetCell(x, y, value)) {
             return;
         }
         GameUpdate update = new GameUpdate(x, y, value, type);
-        // TODO don't call handleGameUpdate. Rely on message queue
-        //if (this.handleGameUpdate(update)) {
-            try {
-                this.sendRequest(update.serialize());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        /*} else {
-            return false;
-        }*/
+        try {
+            this.sendRequest(update.serialize());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -133,31 +136,34 @@ public final class Sudoku implements Game {
         assert (!this.streamGenerated);
         this.streamGenerated = true;
         return Stream.concat(
-                IntStream.range(0,81)
+                IntStream.range(0, 81)
                         .mapToObj(x -> new GameUpdate(x / 9, x % 9, this.riddle.get(x / 9, x % 9), ValueType.GIVEN))
                         .filter(x -> x.getValue() != 0)
                         .map(Optional::of)
                 , Stream.generate(() -> {
-            try {
-                return Optional.of(this.updates.take());
-            } catch (InterruptedException ie) {
-                return Optional.empty();
-            }
-        }));
+                    try {
+                        return Optional.of(this.updates.take());
+                    } catch (InterruptedException ie) {
+                        return Optional.empty();
+                    }
+                }));
     }
 
     @Override
     public void notifyClick(int x, int y) {
         try {
-            channel.basicPublish(EXCHANGE_NAME, this.id+"/clicks", null, (x + " " + y).getBytes("UTF-8"));
+            channel.basicPublish(EXCHANGE_NAME, ChannelNames.getClicksRoutingKey(this.id), null, (x + " " + y).getBytes("UTF-8"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     private void sendRequest(String request) throws IOException {
-        channel.basicPublish(EXCHANGE_NAME, this.id, null, request.getBytes("UTF-8")); // Invio la richiesta al topic specificato
-        System.out.println(" [x] Sent '" + request + "' to topic '" + this.id + "'");
+        channel.basicPublish(EXCHANGE_NAME, ChannelNames.getBaseRoutingKey(this.id), null, request.getBytes(StandardCharsets.UTF_8)); // Invio la richiesta al topic specificato
+        System.out.println(" [x] Sent '" + request + "' to topic '" + ChannelNames.getBaseRoutingKey(this.id) + "'");
     }
 
+    public int getNodeId() {
+        return nodeId;
+    }
 }
