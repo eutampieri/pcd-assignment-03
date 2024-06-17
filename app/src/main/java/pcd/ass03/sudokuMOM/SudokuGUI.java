@@ -90,18 +90,5 @@ public class SudokuGUI extends JFrame {
         button.repaint();
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    new SudokuGUI(GameFactory.startGame());
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                } catch (TimeoutException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
-    }
 }
 

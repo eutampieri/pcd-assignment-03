@@ -23,7 +23,7 @@ public final class GameFactory {
 
         Sudoku sudoku = new Sudoku(riddle, channel, gameId);
 
-        channel.basicPublish(EXCHANGE_NAME, ChannelNames.getAnnounceRoutingKey(gameId), null, "".getBytes("UTF-8"));
+        channel.basicPublish(EXCHANGE_NAME, ChannelNames.getAnnounceRoutingKey(gameId), null, "".getBytes(StandardCharsets.UTF_8));
         final String queueName = channel.queueDeclare().getQueue();
         final String routingKey = ChannelNames.getAnnounceRoutingKey(gameId);
         AtomicBoolean requestSent = new AtomicBoolean(false);
