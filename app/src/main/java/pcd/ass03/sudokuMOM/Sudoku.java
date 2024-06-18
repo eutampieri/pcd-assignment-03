@@ -18,7 +18,7 @@ public final class Sudoku implements Game {
     private final Riddle riddle;
     private final Channel channel;
     private final String id;
-    private final BlockingQueue<GameUpdate> updates = new ArrayBlockingQueue<>(10);
+    private final BlockingQueue<GameUpdate> updates = new ArrayBlockingQueue<>(100);
     private boolean streamGenerated = false;
     private final int nodeId;
 
@@ -32,6 +32,7 @@ public final class Sudoku implements Game {
         this.subscribeToJoins();
         this.subscribeToAnnounce();
         this.nodeId = new Random().nextInt();
+        System.out.println("Initialised node " + this.nodeId);
     }
 
     private void subscribeToUpdates() throws IOException {
@@ -51,8 +52,10 @@ public final class Sudoku implements Game {
         channel.queueBind(queueName, EXCHANGE_NAME, ChannelNames.getJoinsRoutingKey(this.id));
         this.channel.basicConsume(queueName, (consumerTag, x) -> {
             int requestedNode = Integer.parseInt(new String(x.getBody(), StandardCharsets.UTF_8));
+            System.out.println(requestedNode);
             if (requestedNode == this.nodeId) {
                 // I am responsible for answering his request
+                System.out.println("Mando la griglia");
                 this.sendStatus();
             }
         }, x -> {
@@ -67,6 +70,7 @@ public final class Sudoku implements Game {
             String body = new String(x.getBody(), StandardCharsets.UTF_8);
             if (body.isEmpty()) {
                 channel.basicPublish(EXCHANGE_NAME, routingKey, null, Integer.toString(this.nodeId).getBytes());
+                System.out.println("");
             }
         }, x -> {
         });
