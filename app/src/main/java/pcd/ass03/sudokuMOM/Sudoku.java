@@ -19,7 +19,9 @@ public final class Sudoku implements Game {
     private final Channel channel;
     private final String id;
     private final BlockingQueue<GameUpdate> updates = new ArrayBlockingQueue<>(100);
+    private final BlockingQueue<Pair<Integer, Integer>> clicks = new ArrayBlockingQueue<>(10);
     private boolean streamGenerated = false;
+    private boolean clickStreamGenerated = false;
     private final int nodeId;
 
     public Sudoku(Riddle riddle, Channel channel, String id) throws IOException {
@@ -46,6 +48,23 @@ public final class Sudoku implements Game {
         }, x -> {
         });
     }
+
+    private void subscribeToClicks() throws IOException {
+        String queueName = channel.queueDeclare().getQueue();
+        channel.queueBind(queueName, EXCHANGE_NAME, ChannelNames.getClicksRoutingKey(this.id));
+        this.channel.basicConsume(queueName, (consumerTag, x) -> {
+            String message = new String(x.getBody(), StandardCharsets.UTF_8);
+            System.out.println(" [x] Received '" + message + "'");
+            String[] coords = message.split(" ");
+            try {
+                this.clicks.put(new Pair<>(Integer.parseInt(coords[0]), Integer.parseInt(coords[1])));
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }, x -> {
+        });
+    }
+
 
     private void subscribeToJoins() throws IOException {
         String queueName = channel.queueDeclare().getQueue();
@@ -169,5 +188,18 @@ public final class Sudoku implements Game {
 
     public int getNodeId() {
         return nodeId;
+    }
+
+    @Override
+    public Stream<Optional<Pair<Integer, Integer>>> getClicks() {
+        assert (!this.clickStreamGenerated);
+        this.clickStreamGenerated = true;
+        return Stream.generate(() -> {
+            try {
+                return Optional.of(this.clicks.take());
+            } catch (InterruptedException ie) {
+                return Optional.empty();
+            }
+        });
     }
 }

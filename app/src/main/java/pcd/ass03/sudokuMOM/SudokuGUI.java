@@ -22,11 +22,14 @@ public class SudokuGUI extends JFrame {
 
         setVisible(true);
 
-        new Thread(new Runnable() {
-            public void run() {
-                sudoku.getUpdates().filter(Optional::isPresent).map(Optional::get).forEach(e -> updateGrid(e));
-            }
-        }).start();
+        new Thread(() -> sudoku.getUpdates()
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .forEach(e -> updateGrid(e))).start();
+        new Thread(() -> sudoku.getClicks()
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .forEach(e -> this.gridButtons[e.getLeft()][e.getRight()].setBackground(Color.YELLOW))).start();
         this.renderGrid();
     }
 

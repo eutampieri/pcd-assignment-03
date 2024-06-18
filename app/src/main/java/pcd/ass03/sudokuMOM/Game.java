@@ -12,4 +12,5 @@ public interface Game {
     String getId();
     Stream<Optional<GameUpdate>> getUpdates();
     void notifyClick(int x, int y);
+    Stream<Optional<Pair<Integer, Integer>>> getClicks();
 }
