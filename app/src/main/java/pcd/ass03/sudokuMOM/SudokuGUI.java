@@ -39,28 +39,32 @@ public class SudokuGUI extends JFrame {
     public synchronized void renderGrid() {
         JPanel mainGridPanel = new JPanel(new GridLayout(3, 3));
 
-        for (int i = 0; i < 9; i++) {
-            JPanel subGridPanel = new JPanel(new GridLayout(3, 3));
-            subGridPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
-
-            for (int j = 0; j < 9; j++) {
-                gridButtons[i][j] = new JButton("");
-                int finalI = i;
-                int finalJ = j;
-                gridButtons[i][j].addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        sudoku.notifyClick(finalI, finalJ);
-                        try {
-                            byte value = Byte.parseByte(JOptionPane.showInputDialog("Enter value:"));
-                            sudoku.setCell(finalI, finalJ, value, ValueType.USER);
-                        } catch (Exception ex) {
-                            sudoku.setCell(finalI, finalJ, 0, ValueType.USER);
-                        }
+        for(int a = 0; a < 3; a++) {
+            for(int b = 0; b < 3; b++) {
+                JPanel subGridPanel = new JPanel(new GridLayout(3, 3));
+                subGridPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
+                for (int i = 0; i < 3; i++) {
+                    for (int j = 0; j < 3; j++) {
+                        gridButtons[3 * a + i][3 * b + j] = new JButton("");
+                        gridButtons[3 * a + i][3 * b + j].setToolTipText(i + ", " + j);
+                        int finalI = 3 * a + i;
+                        int finalJ = 3 * b + j;
+                        gridButtons[3 * a + i][3 * b + j].addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                sudoku.notifyClick(finalI, finalJ);
+                                try {
+                                    byte value = Byte.parseByte(JOptionPane.showInputDialog("Enter value:"));
+                                    sudoku.setCell(finalI, finalJ, value, ValueType.USER);
+                                } catch (Exception ex) {
+                                    sudoku.setCell(finalI, finalJ, 0, ValueType.USER);
+                                }
+                            }
+                        });
+                        subGridPanel.add(gridButtons[3 * a + i][3 * b + j]);
                     }
-                });
-                subGridPanel.add(gridButtons[i][j]);
+                    mainGridPanel.add(subGridPanel);
+                }
             }
-            mainGridPanel.add(subGridPanel);
         }
 
         JPanel panelWrapper = new JPanel(new BorderLayout());
