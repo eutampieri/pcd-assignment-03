@@ -1,4 +1,4 @@
-package pcd.ass03.sudokuMOM;
+package pcd.ass03.sudoku;
 
 import java.util.Arrays;
 

@@ -1,4 +1,4 @@
-package pcd.ass03.sudokuMOM;
+package pcd.ass03.sudoku;
 
 public class Pair<A, B> {
     private final A left;

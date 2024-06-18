@@ -1,8 +1,5 @@
 package pcd.ass03.sudoku;
 
-import pcd.ass03.sudokuMOM.GameUpdate;
-import pcd.ass03.sudokuMOM.ValueType;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
