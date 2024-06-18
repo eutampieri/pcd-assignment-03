@@ -76,6 +76,7 @@ public class SudokuGUI extends JFrame {
         JButton button = this.gridButtons[r][c];
         button.setEnabled(update.getType() != ValueType.GIVEN);
         button.setText(update.getValue() == 0 ? "" : Integer.toString(update.getValue()));
+        button.setBackground(Color.WHITE);
         button.revalidate();
         button.repaint();
     }

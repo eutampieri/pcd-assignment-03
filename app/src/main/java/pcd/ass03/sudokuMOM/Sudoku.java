@@ -33,6 +33,7 @@ public final class Sudoku implements Game {
         this.subscribeToUpdates();
         this.subscribeToJoins();
         this.subscribeToAnnounce();
+        this.subscribeToClicks();
         this.nodeId = new Random().nextInt();
         System.out.println("Initialised node " + this.nodeId);
     }
