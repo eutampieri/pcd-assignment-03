@@ -1,5 +1,8 @@
 package pcd.ass03.sudokuMOM;
 
+import pcd.ass03.sudoku.Game;
+import pcd.ass03.sudoku.SudokuGUI;
+
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;

@@ -4,6 +4,7 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import de.sfuhrm.sudoku.*;
+import pcd.ass03.sudoku.Game;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

@@ -2,6 +2,7 @@ package pcd.ass03.sudokuMOM;
 
 import com.rabbitmq.client.Channel;
 import de.sfuhrm.sudoku.Riddle;
+import pcd.ass03.sudoku.Game;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
