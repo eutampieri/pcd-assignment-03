@@ -18,7 +18,7 @@ public final class GameFactory {
         Riddle riddle = new GameMatrixFactory().newRiddle(GameSchemas.SCHEMA_9X9);
 
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("192.168.1.9");
+        factory.setHost("localhost");
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
 
@@ -52,7 +52,7 @@ public final class GameFactory {
         Riddle riddle = Creator.createRiddle(matrix);
 
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("192.168.1.9");
+        factory.setHost("localhost");
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
 

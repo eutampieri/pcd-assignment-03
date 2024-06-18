@@ -83,6 +83,9 @@ public class SudokuGUI extends JFrame {
         button.setBackground(Color.WHITE);
         button.revalidate();
         button.repaint();
+        if(sudoku.checkForVictory()) {
+            JOptionPane.showMessageDialog(null, "You won!");
+        }
     }
 
 }

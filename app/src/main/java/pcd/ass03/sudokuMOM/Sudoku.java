@@ -147,7 +147,13 @@ public final class Sudoku implements Game {
 
     @Override
     public boolean checkForVictory() {
-        return this.riddle.isValid();
+        boolean allCellsFilled = true;
+        for(int i = 0; i < 9 && allCellsFilled; i++) {
+            for(int j = 0; j < 9 && allCellsFilled; j++) {
+                allCellsFilled = this.riddle.get(i, j) != 0;
+            }
+        }
+        return this.riddle.isValid() && allCellsFilled;
     }
 
     @Override
