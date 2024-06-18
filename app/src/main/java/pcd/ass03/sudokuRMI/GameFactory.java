@@ -8,17 +8,20 @@ import java.util.concurrent.TimeoutException;
 
 public final class GameFactory {
     public static Game joinGame(String gameId) throws IOException, TimeoutException {
-        Riddle riddle = new GameMatrixFactory().newRiddle(GameSchemas.SCHEMA_9X9);
-
-        return null;
+        GameManager manager = getGameManager();
+        GameMatrix matrix = Creator.createFull(GameSchemas.SCHEMA_9X9);
+        Riddle riddle = Creator.createRiddle(matrix);
+        Sudoku sudoku = new Sudoku(riddle, manager, gameId);
+        manager.joinGame(sudoku, gameId);
+        return sudoku;
     }
 
     public static Game startGame() throws IOException, TimeoutException {
-        GameMatrix matrix = Creator.createFull(GameSchemas.SCHEMA_9X9);
-        Riddle riddle = Creator.createRiddle(matrix);
+        String id = getGameManager().createGame();
+        return joinGame(id);
+    }
 
-        String gameId = UUID.randomUUID().toString();
-
-        return null;
+    private static GameManager getGameManager() {
+        return null; //TODO lookup
     }
 }

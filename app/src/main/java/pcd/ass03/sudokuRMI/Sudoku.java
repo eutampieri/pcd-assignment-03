@@ -60,7 +60,7 @@ public final class Sudoku implements Game, GameEventsListener {
         }
         GameUpdate update = new GameUpdate(x, y, value, type);
         try {
-            this.manager.notifyUpdate(update);
+            this.manager.notifyUpdate(this.id, update);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -108,7 +108,7 @@ public final class Sudoku implements Game, GameEventsListener {
     @Override
     public void notifyClick(int x, int y) {
         try {
-            this.manager.notifyClick(new Pair<>(x, y));
+            this.manager.notifyClick(this.id, new Pair<>(x, y));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
