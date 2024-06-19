@@ -30,10 +30,12 @@ public final class GameFactory {
         AtomicBoolean requestSent = new AtomicBoolean(false);
         channel.queueBind(queueName, EXCHANGE_NAME, routingKey);
         System.out.println("[" + sudoku.getNodeId() + "] Stato iniziale variabile " + requestSent);
+        // ascolta gli id inviati nella coda degli announcement (ogni nodo invia il proprio id nella coda degli announcement nel metodo subscribeToAnnouncement)
         channel.basicConsume(queueName, (consumerTag, x) -> {
             String body = new String(x.getBody(), StandardCharsets.UTF_8);
             System.out.println("[" + sudoku.getNodeId() + "] Received announcement from " + body);
             if (!requestSent.get() && !body.isEmpty() && !body.equals(Integer.toString(sudoku.getNodeId()))) {
+                // nel metodo subscribeToJoins viene letto questo canale, il gameId è l'id del nodo che deve aggionarmi
                 channel.basicPublish(EXCHANGE_NAME, ChannelNames.getJoinsRoutingKey(gameId), null, body.getBytes());
                 requestSent.compareAndSet(false, true);
                 System.out.println("[" + sudoku.getNodeId() + "] Announcement sent to " + body);
@@ -44,6 +46,7 @@ public final class GameFactory {
         });
         
         System.out.println("[" + sudoku.getNodeId() + "] Asking for nodes on game " + gameId);
+        // anche lui manda "" nella coda degli announcement del suo id
         channel.basicPublish(EXCHANGE_NAME, ChannelNames.getAnnounceRoutingKey(gameId), null, "".getBytes(StandardCharsets.UTF_8));
         return sudoku;
     }

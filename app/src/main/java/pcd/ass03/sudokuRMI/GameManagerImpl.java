@@ -10,6 +10,8 @@ import pcd.ass03.sudoku.ValueType;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
 import java.util.concurrent.TimeoutException;
@@ -65,7 +67,10 @@ public class GameManagerImpl extends UnicastRemoteObject implements GameManager 
             }
         });
     }
-    public static void main(String[] args) {
-        // Register this GameManager bind
+    public static void main(String[] args) throws RemoteException {
+        GameManager gameManager = new GameManagerImpl();
+        GameManager gameManagerStub = (GameManager) UnicastRemoteObject.exportObject(gameManager, 1);
+        Registry registry = LocateRegistry.getRegistry();
+        registry.rebind("gameManager", gameManagerStub);
     }
 }

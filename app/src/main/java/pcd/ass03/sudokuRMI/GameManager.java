@@ -4,9 +4,10 @@ import pcd.ass03.sudoku.GameUpdate;
 import pcd.ass03.sudoku.Pair;
 
 import java.io.IOException;
+import java.rmi.Remote;
 import java.util.concurrent.TimeoutException;
 
-public interface GameManager {
+public interface GameManager extends Remote {
     /**
      * Initialises a new game (server side)
      * @return the game ID

@@ -74,6 +74,7 @@ public final class Sudoku implements Game {
     private void subscribeToJoins() throws IOException {
         String queueName = channel.queueDeclare().getQueue();
         channel.queueBind(queueName, EXCHANGE_NAME, ChannelNames.getJoinsRoutingKey(this.id));
+        // viene letto l'id del nodo scelto per avere il sudoku (vedi metodo joinGame)
         this.channel.basicConsume(queueName, (consumerTag, x) -> {
             int requestedNode = Integer.parseInt(new String(x.getBody(), StandardCharsets.UTF_8));
             System.out.println(requestedNode);
@@ -90,9 +91,12 @@ public final class Sudoku implements Game {
         final String queueName = channel.queueDeclare().getQueue();
         final String routingKey = ChannelNames.getAnnounceRoutingKey(this.id);
         channel.queueBind(queueName, EXCHANGE_NAME, routingKey);
+        // ascolta nella coda degli announcement e
         this.channel.basicConsume(queueName, (consumerTag, x) -> {
             String body = new String(x.getBody(), StandardCharsets.UTF_8);
+            // se è stato mandato "" ovvero è stato richiesto l'announcement di tutti i nodi
             if (body.isEmpty()) {
+                // ogni nodo invia l'id del suo nodo
                 channel.basicPublish(EXCHANGE_NAME, routingKey, null, Integer.toString(this.nodeId).getBytes());
                 System.out.println("");
             }

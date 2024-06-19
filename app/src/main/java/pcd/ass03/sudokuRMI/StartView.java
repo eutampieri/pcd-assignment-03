@@ -5,6 +5,7 @@ import pcd.ass03.sudoku.Game;
 import pcd.ass03.sudoku.SudokuGUI;
 
 import java.io.IOException;
+import java.rmi.NotBoundException;
 import java.util.concurrent.TimeoutException;
 
 public class StartView extends BaseStartView {
@@ -15,7 +16,7 @@ public class StartView extends BaseStartView {
             Game sudoku = GameFactory.startGame();
             System.out.println(sudoku.getId());
             new SudokuGUI(sudoku);
-        } catch (IOException | TimeoutException ex) {
+        } catch (IOException | TimeoutException | NotBoundException ex) {
             throw new RuntimeException(ex);
         }
     }
@@ -26,6 +27,8 @@ public class StartView extends BaseStartView {
             new SudokuGUI(GameFactory.joinGame(id));
         } catch (IOException | TimeoutException ex) {
             throw new RuntimeException(ex);
+        } catch (NotBoundException e) {
+            throw new RuntimeException(e);
         }
     }
 
