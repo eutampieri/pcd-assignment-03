@@ -1,8 +1,6 @@
 package pcd.ass03.sudokuRMI;
 
-import de.sfuhrm.sudoku.GameMatrixFactory;
-import de.sfuhrm.sudoku.GameSchemas;
-import de.sfuhrm.sudoku.Riddle;
+import de.sfuhrm.sudoku.*;
 import pcd.ass03.sudoku.Game;
 import pcd.ass03.sudoku.GameUpdate;
 import pcd.ass03.sudoku.Pair;
@@ -16,7 +14,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
 import java.util.concurrent.TimeoutException;
 
-public class GameManagerImpl extends UnicastRemoteObject implements GameManager {
+public class GameManagerImpl implements GameManager {
     private final Map<String, Riddle> games = Collections.synchronizedMap(new HashMap<>());
     private final Map<String, List<GameEventsListener>> clients = Collections.synchronizedMap(new HashMap<>());
 
@@ -27,7 +25,8 @@ public class GameManagerImpl extends UnicastRemoteObject implements GameManager 
     @Override
     public String createGame() {
         String gameId = UUID.randomUUID().toString();
-        Riddle riddle = new GameMatrixFactory().newRiddle(GameSchemas.SCHEMA_9X9);
+        GameMatrix matrix = Creator.createFull(GameSchemas.SCHEMA_9X9);
+        Riddle riddle = Creator.createRiddle(matrix);
         games.put(gameId, riddle);
         clients.put(gameId, new ArrayList<>());
         return gameId;
@@ -69,7 +68,7 @@ public class GameManagerImpl extends UnicastRemoteObject implements GameManager 
     }
     public static void main(String[] args) throws RemoteException {
         GameManager gameManager = new GameManagerImpl();
-        GameManager gameManagerStub = (GameManager) UnicastRemoteObject.exportObject(gameManager, 1);
+        GameManager gameManagerStub = (GameManager) UnicastRemoteObject.exportObject(gameManager, 0);
         Registry registry = LocateRegistry.getRegistry();
         registry.rebind("gameManager", gameManagerStub);
     }

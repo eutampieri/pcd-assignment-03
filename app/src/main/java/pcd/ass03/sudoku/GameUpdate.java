@@ -1,8 +1,9 @@
 package pcd.ass03.sudoku;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
-public final class GameUpdate {
+public final class GameUpdate implements Serializable {
     private final int x;
     private final int y;
     private final int value;

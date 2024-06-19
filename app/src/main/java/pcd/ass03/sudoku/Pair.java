@@ -1,6 +1,8 @@
 package pcd.ass03.sudoku;
 
-public class Pair<A, B> {
+import java.io.Serializable;
+
+public class Pair<A, B> implements Serializable {
     private final A left;
     private final B right;
 
