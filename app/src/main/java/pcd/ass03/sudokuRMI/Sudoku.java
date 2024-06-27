@@ -7,11 +7,7 @@ import pcd.ass03.sudoku.Pair;
 import pcd.ass03.sudoku.ValueType;
 
 import java.io.IOException;
-import java.io.Serializable;
-import java.rmi.RemoteException;
 import java.util.Optional;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -91,7 +87,9 @@ public final class Sudoku implements Game {
                         .mapToObj(x -> new GameUpdate(x / 9, x % 9, this.riddle.get(x / 9, x % 9), ValueType.GIVEN))
                         .filter(x -> x.getValue() != 0)
                         .map(Optional::of)
-                , listener.getUpdates());
+                , listener.getUpdates())
+
+                .peek(x -> x.ifPresent(this::handleGameUpdate));
     }
 
     @Override

@@ -25,7 +25,7 @@ public class SudokuGUI extends JFrame {
         new Thread(() -> sudoku.getUpdates()
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .forEach(e -> updateGrid(e))).start();
+                .forEach(this::updateGrid)).start();
         new Thread(() -> sudoku.getClicks()
                 .filter(Optional::isPresent)
                 .map(Optional::get)
