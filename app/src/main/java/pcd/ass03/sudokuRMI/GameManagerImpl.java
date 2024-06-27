@@ -1,18 +1,16 @@
 package pcd.ass03.sudokuRMI;
 
 import de.sfuhrm.sudoku.*;
-import pcd.ass03.sudoku.Game;
 import pcd.ass03.sudoku.GameUpdate;
 import pcd.ass03.sudoku.Pair;
 import pcd.ass03.sudoku.ValueType;
 
-import java.io.IOException;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
-import java.util.concurrent.TimeoutException;
 
 public class GameManagerImpl implements GameManager {
     private final Map<String, Riddle> games = Collections.synchronizedMap(new HashMap<>());
@@ -33,7 +31,9 @@ public class GameManagerImpl implements GameManager {
     }
 
     @Override
-    public void joinGame(GameEventsListener listener, String gameId) throws RemoteException {
+    public void joinGame(String listenerId, String gameId) throws RemoteException, NotBoundException {
+        Registry registry = LocateRegistry.getRegistry("localhost");
+        GameEventsListener listener =  (GameEventsListener) registry.lookup(listenerId);
         clients.get(gameId).add(listener);
         Riddle riddle = games.get(gameId);
         for (int i = 0; i < 9; i++) {
