@@ -9,8 +9,8 @@ import akka.actor.typed.ActorSystem;
 public abstract class AbstractSimulation {
 
 	private AbstractEnvironment env;
-	private List<AbstractAgent> agents;
-	private List<SimulationListener> listeners;
+	private final List<AbstractAgent> agents;
+	private final List<SimulationListener> listeners;
 	
 
 	private int dt;
@@ -48,12 +48,10 @@ public abstract class AbstractSimulation {
        // ????????????
 		// Wait for the simulation to complete ????????
 		// serve il semaforo?
-		while (!stopFlag.isSet()) {
-			try {
-				Thread.sleep(100); // check every 100ms
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+		try {
+			stopFlag.wait();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 
 		endWallTime = System.currentTimeMillis();
