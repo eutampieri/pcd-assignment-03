@@ -45,9 +45,7 @@ public abstract class AbstractSimulation {
 		);
 
 		system.tell(new Message.Command(nSteps));
-       // ????????????
-		// Wait for the simulation to complete ????????
-		// serve il semaforo?
+		// Wait for the simulation to complete
 		try {
 			stopFlag.wait();
 		} catch (InterruptedException e) {
