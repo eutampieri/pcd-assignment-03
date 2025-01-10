@@ -14,7 +14,6 @@ import java.util.List;
 public class MasterAgent extends AbstractBehavior<Message> {
     private final AbstractSimulation sim;
     private final int numSteps;
-    private final Flag stopFlag;
     private final List<ActorRef<Message>> workers;
     private int pendingResponses;
     private boolean toBeInSyncWithWallTime;
@@ -22,12 +21,12 @@ public class MasterAgent extends AbstractBehavior<Message> {
     private long currentWallTime;
     private int completedSteps = 0;
     private int t = 0;
+    private boolean simulationIsRunning = true;
 
-    public MasterAgent(ActorContext<Message> context, AbstractSimulation sim, int nWorkers, int numSteps, Flag stopFlag, boolean syncWithTime) {
+    public MasterAgent(ActorContext<Message> context, AbstractSimulation sim, int nWorkers, int numSteps, boolean syncWithTime) {
         super(context);
         this.sim = sim;
         this.numSteps = numSteps;
-        this.stopFlag = stopFlag;
         this.workers = new ArrayList<>();
         this.pendingResponses = sim.getAgents().size();
         if (syncWithTime) {
@@ -37,15 +36,15 @@ public class MasterAgent extends AbstractBehavior<Message> {
         createActors();
     }
 
-    public static Behavior<Message> create(AbstractSimulation sim, int nWorkers, int numSteps, Flag stopFlag, boolean syncWithTime) {
-        return Behaviors.setup(context -> new MasterAgent(context, sim, nWorkers, numSteps, stopFlag, syncWithTime));
+    public static Behavior<Message> create(AbstractSimulation sim, int nWorkers, int numSteps, boolean syncWithTime) {
+        return Behaviors.setup(context -> new MasterAgent(context, sim, nWorkers, numSteps, syncWithTime));
     }
 
     private void createActors() {
         var simAgents = sim.getAgents();
         for (int i = 0; i < simAgents.size(); i++) {
             AbstractAgent agent = simAgents.get(i);
-            workers.add(getContext().spawn(WorkerAgent.create(agent, stopFlag), "worker-" + i));
+            workers.add(getContext().spawn(WorkerAgent.create(agent), "worker-" + i));
         }
     }
 
@@ -54,6 +53,11 @@ public class MasterAgent extends AbstractBehavior<Message> {
         return newReceiveBuilder()
                 .onMessage(Message.Command.class, this::onCommand)
                 .onMessage(Message.Response.class, this::onResponse)
+                .onMessage(Message.Stop.class, (r) -> {
+                    this.simulationIsRunning = false;
+                    this.workers.forEach((x) -> x.tell(r));
+                    return Behaviors.same();
+                })
                 .build();
     }
 
@@ -73,6 +77,7 @@ public class MasterAgent extends AbstractBehavior<Message> {
     private void startSimulation(int numSteps) {
         var simEnv = sim.getEnvironment();
         var simAgents = sim.getAgents();
+        this.simulationIsRunning = true;
 
         simEnv.init();
         for (var a : simAgents) {
@@ -90,7 +95,7 @@ public class MasterAgent extends AbstractBehavior<Message> {
     }
 
     private void stepSimulation(boolean firstExecution) {
-        if (firstExecution || (!stopFlag.isSet() && pendingResponses == 0)) {
+        if (firstExecution || (simulationIsRunning && pendingResponses == 0)) {
             var simEnv = sim.getEnvironment();
             var simAgents = sim.getAgents();
             int dt = sim.getTimeStep();
@@ -126,9 +131,12 @@ public class MasterAgent extends AbstractBehavior<Message> {
             } else {
                 // Se abbiamo completato tutti gli step, ferma la simulazione
                 getContext().getLog().info("Simulation completed.");
-                stopFlag.set();
+                this.simulationIsRunning = false;
             }
             simEnv.cleanActions();
+        }
+        if(!simulationIsRunning) {
+            this.getContext().getSystem().terminate();
         }
     }
 

@@ -2,7 +2,6 @@ package pcd.ass03.ass01.simengine_conc.cli;
 
 import pcd.ass03.ass01.simengine_conc.AbstractAgent;
 import pcd.ass03.ass01.simengine_conc.AbstractEnvironment;
-import pcd.ass03.ass01.simengine_conc.Flag;
 import pcd.ass03.ass01.simengine_conc.SimulationListener;
 import pcd.ass03.ass01.simtraffic_conc_examples.TrafficSimulationSingleRoadTwoCars;
 
@@ -43,9 +42,6 @@ public class RunTrafficSimulation {
 
 		});
 
-		Flag stopFlag = new Flag();
-		simulation.run(steps, stopFlag, true);
-
-
+		simulation.run(steps, true);
 	}
 }

@@ -23,6 +23,8 @@ public abstract class AbstractSimulation {
 	private long startWallTime;
 	private long endWallTime;
 
+	private ActorSystem<Message> system;
+
 	protected AbstractSimulation() {
 		agents = new ArrayList<>();
 		listeners = new ArrayList<>();
@@ -34,25 +36,22 @@ public abstract class AbstractSimulation {
 	
 	public abstract void setup();
 	
-	public void run(int nSteps, Flag stopFlag, boolean syncWithTime) {
+	public void run(int nSteps, boolean syncWithTime) {
 		this.nSteps = nSteps;
 
 		startWallTime = System.currentTimeMillis();
 
-		ActorSystem<Message> system = ActorSystem.create(
-				MasterAgent.create(this, nWorkers, nSteps, stopFlag, syncWithTime),
+		 this.system = ActorSystem.create(
+				MasterAgent.create(this, nWorkers, nSteps, syncWithTime),
 				"simulation-system"
 		);
 
 		system.tell(new Message.Command(nSteps));
-		// Wait for the simulation to complete
-		try {
-			stopFlag.wait();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
 
-		endWallTime = System.currentTimeMillis();
+		// Wait for the simulation to complete
+		system.getWhenTerminated().toCompletableFuture().join();
+
+        endWallTime = System.currentTimeMillis();
 		system.terminate();
 	}
 	
@@ -126,6 +125,11 @@ public abstract class AbstractSimulation {
 			l.notifyStepDone(t, agents, env);
 		}
 	}
-	
+
+	public void requestStop() {
+		if(this.system != null) {
+			this.system.tell(new Message.Stop());
+		}
+	}
 	
 }

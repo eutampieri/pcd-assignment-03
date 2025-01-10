@@ -1,11 +1,9 @@
 package pcd.ass03.ass01.simengine_conc.gui;
 
 import pcd.ass03.ass01.simengine_conc.AbstractSimulation;
-import pcd.ass03.ass01.simengine_conc.Flag;
 
 public class SimulationController {
 
-	private Flag stopFlag;
 	private AbstractSimulation simulation;
 	private SimulationGUI gui;
 	private RoadSimView view;
@@ -13,7 +11,6 @@ public class SimulationController {
 	 
 	public SimulationController(AbstractSimulation simulation) {
 		this.simulation = simulation;
-		this.stopFlag = new Flag();
 	}
 	
 	public void attach(SimulationGUI gui) {
@@ -31,15 +28,14 @@ public class SimulationController {
 			simulation.setup();			
 			view.display();
 		
-			stopFlag.reset();
-			simulation.run(nSteps, stopFlag, true);
+			simulation.run(nSteps, true);
 			gui.reset();
 			
 		}).start();
 	}
 	
 	public void notifyStopped() {
-		stopFlag.set();
+		this.simulation.requestStop();
 	}
 
 }

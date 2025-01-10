@@ -14,6 +14,8 @@ public class Message {
 
     public static class Response extends Message {
     }
+    public static class Stop extends Message {
+    }
 
     public static class WorkerCommand extends Message {
         public final int dt;
